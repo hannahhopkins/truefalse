@@ -113,7 +113,7 @@ else:
     context = str(raw_context).strip()
 
 # ---- TITLE + STATEMENT ----
-st.markdown("# True or False?")
+st.markdown("# True or False Quiz")
 st.markdown(f"## {statement}")
 
 # ---- BUTTONS ----
