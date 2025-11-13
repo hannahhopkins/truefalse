@@ -127,4 +127,5 @@ if st.session_state.answered:
         st.session_state.answered = False
         st.session_state.show_context = False
         st.session_state.last_correct = False
-        st.experimental_rerun()
+        st.rerun()
+
