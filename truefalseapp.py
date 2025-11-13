@@ -15,7 +15,7 @@ st.set_page_config(page_title="True/False Quiz", layout="wide")
 # ---- LOAD DATA ----
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Trivia Game - Sheet1.csv")
+    df = pd.read_csv("truefalse.csv")
     df.columns = [c.lower().strip() for c in df.columns]
     return df
 
