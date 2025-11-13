@@ -41,16 +41,11 @@ def restart_quiz():
     st.session_state.last_correct = False
 
 
-# ---- CSS OVERRIDES FOR LARGE COLORED BUTTONS ----
+# ---- SAFE CSS-ONLY BUTTON STYLING ----
 st.markdown("""
 <style>
-
-button[kind="secondary"] {
-    background-color: transparent !important;
-}
-
-/* TRUE BUTTON */
-div[data-testid="column"]:nth-of-type(1) button {
+/* TRUE BUTTON STYLE */
+button.true-btn {
     background-color: #90EE90 !important; /* Light green */
     color: black !important;
     padding: 20px !important;
@@ -60,8 +55,8 @@ div[data-testid="column"]:nth-of-type(1) button {
     border: none !important;
 }
 
-/* FALSE BUTTON */
-div[data-testid="column"]:nth-of-type(2) button {
+/* FALSE BUTTON STYLE */
+button.false-btn {
     background-color: #FF6961 !important; /* Red */
     color: white !important;
     padding: 20px !important;
@@ -70,7 +65,6 @@ div[data-testid="column"]:nth-of-type(2) button {
     width: 100% !important;
     border: none !important;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -90,7 +84,8 @@ st.markdown(score_html, unsafe_allow_html=True)
 
 # ---- END OF QUIZ ----
 if st.session_state.index >= len(st.session_state.order):
-    st.success(f"🎉 Quiz complete! Final score: {st.session_state.score}/{len(df)}")
+    st.markdown("## 🎉 Quiz complete!")
+    st.write(f"Final score: **{st.session_state.score} / {len(df)}**")
 
     if st.button("Play Again"):
         restart_quiz()
@@ -99,16 +94,19 @@ if st.session_state.index >= len(st.session_state.order):
     st.stop()
 
 
-# ---- GET CURRENT QUESTION ----
+# ---- CURRENT QUESTION ----
 q_idx = st.session_state.order[st.session_state.index]
 row = df.iloc[q_idx]
 
 statement = row["statement"]
 correct_answer = str(row["outcome"]).strip().lower()
-context = row.get("context", "")
+context = row.get("context", "").strip()
 
 
-# ---- SHOW QUESTION ----
+# ---- TITLE (H1) ----
+st.markdown("# True or False?")
+
+# ---- STATEMENT (H2) ----
 st.markdown(f"## {statement}")
 
 
@@ -116,13 +114,28 @@ st.markdown(f"## {statement}")
 col1, col2 = st.columns(2)
 
 with col1:
-    true_clicked = st.button("✓ True", key=f"true_{st.session_state.index}")
-
+    true_btn = st.button("✓ True", key=f"true_{st.session_state.index}")
 with col2:
-    false_clicked = st.button("✗ False", key=f"false_{st.session_state.index}")
+    false_btn = st.button("✗ False", key=f"false_{st.session_state.index}")
+
+# Assign CSS classes safely AFTER creation
+st.markdown(
+    f"""
+    <script>
+    const parent = window.parent.document;
+
+    let t = parent.querySelector('button[data-testid="baseButton-true_{st.session_state.index}"]');
+    if (t) t.classList.add('true-btn');
+
+    let f = parent.querySelector('button[data-testid="baseButton-false_{st.session_state.index}"]');
+    if (f) f.classList.add('false-btn');
+    </script>
+    """,
+    unsafe_allow_html=True
+)
 
 
-# ---- ANSWER HANDLING ----
+# ---- ANSWER LOGIC ----
 def handle_answer(choice):
     if st.session_state.answered:
         return
@@ -136,10 +149,10 @@ def handle_answer(choice):
         st.session_state.last_correct = False
 
 
-if true_clicked:
+if true_btn:
     handle_answer("true")
 
-if false_clicked:
+if false_btn:
     handle_answer("false")
 
 
@@ -150,7 +163,7 @@ if st.session_state.answered:
     else:
         st.error(f"Incorrect — the correct answer is **{correct_answer.title()}**.")
 
-    if isinstance(context, str) and context.strip() and context.lower() != "nan":
+    if context and context.lower() != "nan":
         st.info(f"**Context:** {context}")
 
     if st.button("Next Question ➜"):
