@@ -2,6 +2,14 @@ import streamlit as st
 import pandas as pd
 import random
 
+@st.cache_data
+def load_data():
+    df = pd.read_csv("truefalse.csv")
+    df.columns = [c.lower().strip() for c in df.columns]
+    return df
+
+df = load_data()
+
 st.set_page_config(page_title="True/False Quiz", layout="wide")
 
 # ---- LOAD DATA ----
