@@ -52,7 +52,7 @@ def restart_quiz():
     st.session_state.last_correct = False
 
 # ---- UI HEADER ----
-st.title("True or False?")
+st.title("True or False Game")
 
 # ---- BOTTOM-RIGHT SCORE DISPLAY ----
 score_placeholder = st.empty()
@@ -88,29 +88,65 @@ context = row.get("context", "")
 st.markdown(f"### {statement}")
 
 # ---- BUTTON HANDLING ----
+# ---- BUTTON LAYOUT (LARGE, COLORED) ----
+
+# Custom CSS for button styling
+st.markdown("""
+<style>
+.true-btn {
+    background-color: #90EE90 !important;   /* light green */
+    color: black !important;
+    padding: 20px 40px !important;
+    font-size: 24px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    border: none !important;
+}
+.false-btn {
+    background-color: #FF6961 !important;   /* red */
+    color: white !important;
+    padding: 20px 40px !important;
+    font-size: 24px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    border: none !important;
+}
+button[kind="secondary"] {
+    background-color: transparent !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
-def handle_answer(choice):
-    if st.session_state.answered:
-        return
-
-    st.session_state.answered = True
-
-    if choice == correct_answer:
-        st.session_state.score += 1
-        st.session_state.last_correct = True
-    else:
-        st.session_state.last_correct = False
-
-    st.session_state.show_context = True
-
 with col1:
-    if st.button("✓ True", key=f"true_{st.session_state.index}", use_container_width=True):
-        handle_answer("true")
+    true_clicked = st.button("✓ True", key=f"true_{st.session_state.index}", use_container_width=True)
+    st.markdown(f"""
+        <script>
+        var btn = window.parent.document.querySelector('button[data-testid="baseButton-true_{st.session_state.index}"]');
+        if (btn) {{
+            btn.className += " true-btn";
+        }}
+        </script>
+    """, unsafe_allow_html=True)
 
 with col2:
-    if st.button("✗ False", key=f"false_{st.session_state.index}", use_container_width=True):
-        handle_answer("false")
+    false_clicked = st.button("✗ False", key=f"false_{st.session_state.index}", use_container_width=True)
+    st.markdown(f"""
+        <script>
+        var btn = window.parent.document.querySelector('button[data-testid="baseButton-false_{st.session_state.index}"]');
+        if (btn) {{
+            btn.className += " false-btn";
+        }}
+        </script>
+    """, unsafe_allow_html=True)
+
+# Handle logic
+if true_clicked:
+    handle_answer("true")
+
+if false_clicked:
+    handle_answer("false")
 
 # ---- FEEDBACK AFTER ANSWERING ----
 if st.session_state.answered:
