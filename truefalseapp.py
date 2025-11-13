@@ -100,7 +100,15 @@ row = df.iloc[q_idx]
 
 statement = row["statement"]
 correct_answer = str(row["outcome"]).strip().lower()
-context = row.get("context", "").strip()
+
+# ---- SAFE CONTEXT HANDLING ----
+raw_context = row.get("context", "")
+
+if isinstance(raw_context, float) or raw_context is None:
+    context = ""
+else:
+    context = str(raw_context).strip()
+
 
 
 # ---- TITLE (H1) ----
