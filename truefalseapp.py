@@ -13,6 +13,19 @@ def load_data():
 
 df = load_data()
 
+# ---- NORMALIZE OUTCOME VALUES ----
+def normalize_outcome(val):
+    if isinstance(val, float) or val is None:
+        return ""
+    cleaned = str(val).strip().lower()
+    if cleaned in ["true", "t", "yes", "1"]:
+        return "true"
+    if cleaned in ["false", "f", "no", "0"]:
+        return "false"
+    return cleaned  # fallback for unexpected values
+
+df["outcome"] = df["outcome"].apply(normalize_outcome)
+
 # ---- INITIALIZE SESSION STATE ----
 if "order" not in st.session_state:
     st.session_state.order = list(range(len(df)))
@@ -30,7 +43,6 @@ if "answered" not in st.session_state:
 if "last_correct" not in st.session_state:
     st.session_state.last_correct = False
 
-
 # ---- RESET FUNCTION ----
 def restart_quiz():
     st.session_state.order = list(range(len(df)))
@@ -40,13 +52,11 @@ def restart_quiz():
     st.session_state.answered = False
     st.session_state.last_correct = False
 
-
-# ---- SAFE CSS-ONLY BUTTON STYLING ----
+# ---- SAFE CSS FOR BUTTONS ----
 st.markdown("""
 <style>
-/* TRUE BUTTON STYLE */
 button.true-btn {
-    background-color: #90EE90 !important; /* Light green */
+    background-color: #90EE90 !important;
     color: black !important;
     padding: 20px !important;
     font-size: 24px !important;
@@ -54,10 +64,8 @@ button.true-btn {
     width: 100% !important;
     border: none !important;
 }
-
-/* FALSE BUTTON STYLE */
 button.false-btn {
-    background-color: #FF6961 !important; /* Red */
+    background-color: #FF6961 !important;
     color: white !important;
     padding: 20px !important;
     font-size: 24px !important;
@@ -68,7 +76,6 @@ button.false-btn {
 </style>
 """, unsafe_allow_html=True)
 
-
 # ---- FLOATING SCORE BADGE ----
 score_html = """
 <div style="position:fixed; bottom:20px; right:20px; 
@@ -78,9 +85,7 @@ score_html = """
     Score: <strong>{}</strong>
 </div>
 """.format(st.session_state.score)
-
 st.markdown(score_html, unsafe_allow_html=True)
-
 
 # ---- END OF QUIZ ----
 if st.session_state.index >= len(st.session_state.order):
@@ -93,40 +98,34 @@ if st.session_state.index >= len(st.session_state.order):
 
     st.stop()
 
-
-# ---- CURRENT QUESTION ----
+# ---- GET CURRENT QUESTION ----
 q_idx = st.session_state.order[st.session_state.index]
 row = df.iloc[q_idx]
 
 statement = row["statement"]
-correct_answer = str(row["outcome"]).strip().lower()
+correct_answer = row["outcome"]  # always "true" or "false"
 
 # ---- SAFE CONTEXT HANDLING ----
 raw_context = row.get("context", "")
-
 if isinstance(raw_context, float) or raw_context is None:
     context = ""
 else:
     context = str(raw_context).strip()
 
-
-
-# ---- TITLE (H1) ----
+# ---- TITLE + STATEMENT ----
 st.markdown("# True or False?")
-
-# ---- STATEMENT (H2) ----
 st.markdown(f"## {statement}")
-
 
 # ---- BUTTONS ----
 col1, col2 = st.columns(2)
 
 with col1:
     true_btn = st.button("✓ True", key=f"true_{st.session_state.index}")
+
 with col2:
     false_btn = st.button("✗ False", key=f"false_{st.session_state.index}")
 
-# Assign CSS classes safely AFTER creation
+# ---- Apply CSS classes to buttons ----
 st.markdown(
     f"""
     <script>
@@ -142,27 +141,23 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # ---- ANSWER LOGIC ----
 def handle_answer(choice):
     if st.session_state.answered:
         return
 
     st.session_state.answered = True
-
     if choice == correct_answer:
         st.session_state.score += 1
         st.session_state.last_correct = True
     else:
         st.session_state.last_correct = False
 
-
 if true_btn:
     handle_answer("true")
 
 if false_btn:
     handle_answer("false")
-
 
 # ---- FEEDBACK ----
 if st.session_state.answered:
@@ -171,7 +166,7 @@ if st.session_state.answered:
     else:
         st.error(f"Incorrect — the correct answer is **{correct_answer.title()}**.")
 
-    if context and context.lower() != "nan":
+    if context:
         st.info(f"**Context:** {context}")
 
     if st.button("Next Question ➜"):
