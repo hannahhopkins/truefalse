@@ -44,6 +44,15 @@ def restart_quiz():
 st.title("True or False?")
 
 # ---- FLOATING SCORE BADGE ----
-score_html = f"""
+# ---- FLOATING SCORE BADGE ----
+score_html = """
 <div style="position:fixed; bottom:20px; right:20px; 
-            background:#f0f0
+            background:#f0f0f0; padding:12px 18px; 
+            border-radius:10px; font-size:18px; 
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);">
+    Score: <strong>{}</strong>
+</div>
+""".format(st.session_state.score)
+
+st.markdown(score_html, unsafe_allow_html=True)
+
